@@ -55,8 +55,13 @@ class Report:
                 obj = dict()
 
                 # Add main wind data
-                for index, key in enumerate(['direction', 'speed', 'gust', 'unit']):
+                unit = wind.group(4)
+                for index, key in enumerate(['direction', 'speed', 'gust']):
                     value = wind.group(index+1)
+
+                    if key == 'speed':
+                        key = key + '_' + unit.lower()
+
                     if value and not '/' in value:
                         obj[key] = self.int_or_str(value)
 
