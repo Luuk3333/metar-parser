@@ -1,5 +1,6 @@
 import re
 from datetime import datetime
+import json
 
 reports = [
     "EHAM 020825Z 21022KT 190V250 9999 FEW008 SCT018 BKN022 17/15 Q1002 NOSIG",
@@ -8,54 +9,81 @@ reports = [
     "EGPK 020920Z 25010G21KT 8000 -RA FEW014 SCT020 BKN042 09/08 Q0991"
 ]
 
-def find(regex, string):
-    matches = re.search(regex, string)
+class Report:
+    def find(self, regex, string):
+        matches = re.search(regex, string)
+        if not matches:
+            return None
+        return matches.group().strip()
 
-    if not matches:
-        return None
+    # Try converting to int, if fails, return string
+    def int_or_str(self, string):
+        try:
+            return int(string)
+        except ValueError:
+            return string.strip()
 
-    return matches.group().strip()
+    def __init__(self, report):
+        report = report.strip()
 
-for report in reports:
-    print(report)
-
-    obj = {
-        'ident': find(r'^\S{4}\s', report),
-        'raw': report
-    }
-
-    # Get date and time
-    reported = find(r'\s\d{6}Z\s', report).replace('Z', '')
-    dt = datetime.strptime(reported, '%d%H%M')
-    dt = dt.replace(year=datetime.today().year, month=datetime.today().month)
-    obj['reported'] = dt.isoformat()
-
-    # Get wind info
-    wind = re.search(r'\s(\d{3}|VRB)(\d{2})(?:G(\d*))?KT\s(?:(\d{3})V(\d{3})\s)?', report)  # https://regex101.com/r/wuyEsI/1
-    if wind:
-        wind_obj = {
-            'direction': int(wind.group(1)),
-            'speed': int(wind.group(2))
+        self.data = {
+            'raw': report,
+            'decoded': True
         }
 
-        if wind.group(3):
-            wind_obj['gust'] = int(wind.group(3))
+        # Split report into main parts: ident, date+time, body, remarks
+        parts = re.match(r'^(\S{4})\s*(.*?Z)(.*?)(?:RMK(.*))?$', report)    # https://regex101.com/r/Nq5xhk/1
 
-        if wind.group(4) and wind.group(5):
-            wind_obj['variable'] = {
-                'from': int(wind.group(4)),
-                'to': int(wind.group(5))
-            }
+        if not parts:
+            self.data['decoded'] = False
+            return
 
-        obj['wind'] = wind_obj
+        self.data['ident'] = parts.group(1)
 
-    # Get temperatures
-    temps = re.search(r'\s(\d{2})/(\d{2})\s', report)
-    if temps:
-        obj['temperatures'] = {
-            'temperature': int(temps.group(1)),
-            'dew_point': int(temps.group(2)),
-        }
+        # Get date and time
+        if parts.group(2):
+            dt = datetime.strptime(parts.group(2), '%d%H%M%z')
+            dt = dt.replace(year=datetime.today().year, month=datetime.today().month)
+            self.data['reported'] = dt.isoformat()
 
-    import json
-    print(json.dumps(obj, indent=4, sort_keys=True))
+        if parts.group(3):
+            # Get wind data
+            wind = re.search(r'\s(?:([\d\/]{3}|VRB)([\d\/]{2,3}))(?:G(\d{2,3}))?(KT|MPS)(?:\s(\d{3})V(\d{3})\s)?', parts.group(3))  # https://regex101.com/r/wuyEsI/3
+            if wind:
+                obj = dict()
+
+                # Add main wind data
+                for index, key in enumerate(['direction', 'speed', 'gust', 'unit']):
+                    value = wind.group(index+1)
+                    if value and not '/' in value:
+                        obj[key] = self.int_or_str(value)
+
+                # Add variable wind direction
+                if wind.group(5) and wind.group(6) and not ('/' in wind.group(5) or '/' in wind.group(6)):
+                    obj['variable_direction'] = [self.int_or_str(wind.group(5)), self.int_or_str(wind.group(6))]
+
+                if len(obj) > 0:
+                    self.data['wind'] = obj
+
+            # Get temperature data
+            temps = re.search(r'\s(M?\d{2})/(M?\d{2})', parts.group(3))    # https://regex101.com/r/oqplsG/1
+            if temps:
+                obj = dict()
+
+                for index, key in enumerate(['temperature', 'dew_point']):
+                    value = temps.group(index+1).replace('M', '-')
+                    if value and not '/' in value:
+                        obj[key] = self.int_or_str(value)
+
+                if len(obj) > 0:
+                    self.data['temperatures'] = obj
+
+    def json(self):
+        return json.dumps(self.data, indent=4, sort_keys=True)
+
+    def decoded(self):
+        return self.data['decoded']
+
+for raw in reports:
+    report = Report(raw)
+    print(report.json())
