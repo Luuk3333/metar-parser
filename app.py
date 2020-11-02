@@ -28,23 +28,25 @@ class Report:
 
         self.data = {
             'raw': report,
-            'decoded': True
+            'decoded': False
         }
 
         # Split report into main parts: ident, date+time, body, remarks
         parts = re.match(r'^(\S{4})\s*(.*?Z)(.*?)(?:RMK(.*))?$', report)    # https://regex101.com/r/Nq5xhk/1
 
         if not parts:
-            self.data['decoded'] = False
             return
 
         self.data['ident'] = parts.group(1)
 
         # Get date and time
         if parts.group(2):
-            dt = datetime.strptime(parts.group(2), '%d%H%M%z')
-            dt = dt.replace(year=datetime.today().year, month=datetime.today().month)
-            self.data['reported'] = dt.isoformat()
+            try:
+                dt = datetime.strptime(parts.group(2), '%d%H%M%z')
+                dt = dt.replace(year=datetime.today().year, month=datetime.today().month)
+                self.data['reported'] = dt.isoformat()
+            except ValueError as e:
+                return
 
         if parts.group(3):
             # Get wind data
@@ -77,6 +79,8 @@ class Report:
 
                 if len(obj) > 0:
                     self.data['temperatures'] = obj
+
+        self.data['decoded'] = True
 
     def json(self):
         return json.dumps(self.data, indent=4, sort_keys=True)
