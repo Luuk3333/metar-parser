@@ -55,15 +55,14 @@ class Report:
                 obj = dict()
 
                 # Add main wind data
-                unit = wind.group(4)
                 for index, key in enumerate(['direction', 'speed', 'gust']):
                     value = wind.group(index+1)
 
-                    if key == 'speed':
-                        key = key + '_' + unit.lower()
-
                     if value and not '/' in value:
                         obj[key] = self.int_or_str(value)
+
+                if 'speed' in obj:
+                    obj['speed_unit'] = wind.group(4).lower()
 
                 # Add variable wind direction
                 if wind.group(5) and wind.group(6) and not ('/' in wind.group(5) or '/' in wind.group(6)):
@@ -88,7 +87,7 @@ class Report:
             # Get report modifier
             for modifier in ['AUTO', 'COR']:    
                 # Note: In case both AUTO and COR are present, COR will be used as per https://www.ofcm.gov/publications/fmh/FMH1/FMH1.pdf
-                # (p. 58: "COR, shall be substituted in place of AUTO")
+                # (p. 58: "In the event of a corrected METAR or SPECI, the report modifier, COR, shall be substituted in place of AUTO")
                 if modifier in parts.group(3):
                     self.data['report_modifier'] = modifier
 
