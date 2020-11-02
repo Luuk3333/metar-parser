@@ -85,6 +85,13 @@ class Report:
                 if len(obj) > 0:
                     self.data['temperatures'] = obj
 
+            # Get report modifier
+            for modifier in ['AUTO', 'COR']:    
+                # Note: In case both AUTO and COR are present, COR will be used as per https://www.ofcm.gov/publications/fmh/FMH1/FMH1.pdf
+                # (p. 58: "COR, shall be substituted in place of AUTO")
+                if modifier in parts.group(3):
+                    self.data['report_modifier'] = modifier
+
         self.data['decoded'] = True
 
     def json(self):
