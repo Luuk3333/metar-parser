@@ -1,5 +1,5 @@
-# python-metar-decoder
-A METAR decoder written in Python.
+# python-metar-extractor
+Extracts values from METAR reports.
 
 ## Output format
 | **key** | **unit** | **datatype** | **description**
