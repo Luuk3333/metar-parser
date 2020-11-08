@@ -3,13 +3,6 @@ from datetime import datetime
 import json
 from fractions import Fraction
 
-reports = [
-    "EHAM 020825Z 21022KT 190V250 9999 FEW008 SCT018 BKN022 17/15 Q1002 NOSIG",
-    "TNCB 020755Z AUTO 11004KT 9999 NCD 26/25 Q1008",
-    "KLAX 020753Z 05004KT 0SM R25L/1800V3000FT FG VV002 17/16 A3006 RMK AO2 SLP177 T01670161 402440128 $",
-    "EGPK 020920Z 25010G21KT 8000 -RA FEW014 SCT020 BKN042 09/08 Q0991"
-]
-
 class Report:
     def find(self, regex, string):
         matches = re.search(regex, string)
@@ -136,7 +129,3 @@ class Report:
 
     def decoded(self):
         return self.data['decoded']
-
-for raw in reports:
-    report = Report(raw)
-    print(report.json())
