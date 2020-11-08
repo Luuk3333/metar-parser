@@ -1,6 +1,7 @@
 import re
 from datetime import datetime
 import json
+from fractions import Fraction
 
 reports = [
     "EHAM 020825Z 21022KT 190V250 9999 FEW008 SCT018 BKN022 17/15 Q1002 NOSIG",
@@ -90,6 +91,43 @@ class Report:
                 # (p. 58: "In the event of a corrected METAR or SPECI, the report modifier, COR, shall be substituted in place of AUTO")
                 if modifier in parts.group(3):
                     self.data['report_modifier'] = modifier
+
+            # Get visibility data
+            visibility = re.search(r'\s(?:(\d{4})\s|(M)?([\d\s/]{1,5})(SM)|(CAVOK))', parts.group(3))   # https://regex101.com/r/YWZkDI/2/
+            if visibility:
+                distance = None
+                unit = None
+
+                # Check for several visibilty formats
+                if visibility.group(5): # 'CAVOK'
+                    distance = 10000
+                    unit = 'm'
+                elif visibility.group(1):   # '8000', '9999'
+                    distance = int(visibility.group(1))
+                    unit = 'm'
+                elif visibility.group(3):   # '2 1/4SM', 'M1/4SM'
+                    # Convert fraction to float (https://stackoverflow.com/a/1806309)
+                    # Note: negative values fail using this method. Since only positive values are handled this should not be an issue.
+                    distance = float(sum(Fraction(s) for s in visibility.group(3).split()))
+
+                    # The character 'M' is used to define a visibility distance less than the value.
+                    # We'll use negative values to indicate this.
+                    if visibility.group(2):
+                        distance = distance * -1
+
+                    if visibility.group(4):
+                        unit = visibility.group(4)
+
+                obj = dict()
+
+                if distance:
+                    obj['distance'] = distance
+
+                    if unit:
+                        obj['distance_unit'] = unit
+
+                if len(obj) > 0:
+                    self.data['visibility'] = obj
 
         self.data['decoded'] = True
 
