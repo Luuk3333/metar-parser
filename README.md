@@ -12,6 +12,9 @@ Extracts values from METAR reports.
 | temperatures | | object | contains temperature data
 | temperatures/dew_point | degrees Celsius | int | dew point temperature
 | temperatures/temperature | degrees Celsius | int | temperature
+| visibility | | object | contains visibility data
+| visibility/distance | specified by `visibility/distance_unit` | int | visibility distance
+| visibility/distance_unit |  | int | unit of visibility distance
 | wind | | object | contains wind data
 | wind/direction | degrees or `'VRB'` | int or string | wind direction
 | wind/gust | knots | int | gust speed
