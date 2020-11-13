@@ -170,9 +170,18 @@ class Report:
             'visibility': self.visibility()
         }
 
-    def json(self):
-        """Return the parsed report as JSON."""
-        return json.dumps(self.result(), indent=4, sort_keys=True)
+    def json(self, pretty=False):
+        """Return the parsed report as JSON.        
+
+        Parameters
+        ----------
+        pretty : boolean
+          Beautify JSON output.
+        """
+        if pretty:
+            return json.dumps(self.result(), indent=4, sort_keys=True)
+        
+        return json.dumps(self.result())
 
     def is_parsed(self):
         """Indicate if the report could be parsed."""

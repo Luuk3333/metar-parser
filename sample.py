@@ -8,7 +8,7 @@ reports = [
 
 report = Metar.Report(reports[0])
 if report.is_parsed:
-    print(report.json())
+    print(report.json(pretty=True))
 
 print('--------')
 
