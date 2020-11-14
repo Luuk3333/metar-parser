@@ -1,17 +1,19 @@
-# python-metar-extractor
-Extracts values from METAR reports.
+# metar-parser
+Parses METAR reports and extracts values.
 
-## Output format
+## JSON Output Format
 | **key** | **unit** | **datatype** | **description**
 |-|-|-|-|
-| decoded | | boolean | decoding status
-| indent | | string | weather station identifier
+| date | | string | date of report (YYYY-MM-DD)
+| ident | | string | weather station identifier
+| parsed | | boolean | parsed status
 | raw | | string | input METAR
 | report_modifier | AUTO=a fully automated report with no human intervention or oversight, COR=a corrected report | string |
 | reported | ISO 8601 | string | date and time of report
 | temperatures | | object | contains temperature data
 | temperatures/dew_point | degrees Celsius | int | dew point temperature
 | temperatures/temperature | degrees Celsius | int | temperature
+| time | | string | time of report (HH:MM)
 | visibility | | object | contains visibility data
 | visibility/distance | specified by `visibility/distance_unit` | int | visibility distance
 | visibility/distance_unit |  | int | unit of visibility distance
@@ -20,4 +22,4 @@ Extracts values from METAR reports.
 | wind/gust | knots | int | gust speed
 | wind/speed | specified by `wind/speed_unit` | int | wind speed
 | wind/speed_unit |  | int | unit of wind speed
-| wind/variable_direction | degrees | list | contains variable wind directions
+| wind/variable_directions | degrees | list | contains variable wind directions

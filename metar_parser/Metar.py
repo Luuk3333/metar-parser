@@ -32,14 +32,17 @@ class Report:
         self.raw = raw.strip()  # Input METAR report
         self.parsed = False
         self.ident = None
-        self.reported = None
         self.report_modifier = None
+
+        self.reported = None
+        self.date = None
+        self.time = None
 
         self.wind_direction = None
         self.wind_speed = None
         self.wind_speed_unit = None
         self.wind_gust = None
-        self.wind_variable_direction = None
+        self.wind_variable_directions = None
 
         self.temperature = None
         self.dew_point = None
@@ -61,6 +64,8 @@ class Report:
                 dt = datetime.strptime(parts.group(2), '%d%H%M%z')
                 dt = dt.replace(year=datetime.today().year, month=datetime.today().month)
                 self.reported = dt.isoformat()
+                self.date = dt.strftime('%Y-%m-%d')
+                self.time = dt.strftime('%H:%M')
             except ValueError as e:
                 return
 
@@ -77,13 +82,13 @@ class Report:
                     self.wind_speed_unit = wind.group(4).lower()
 
                 # Add variable wind direction
-                variable_direction = [
+                variable_directions = [
                     self.__int_or_str(wind.group(5)),
                     self.__int_or_str(wind.group(6))
                 ]
 
-                if variable_direction[0] and variable_direction[1]:
-                    self.wind_variable_direction = variable_direction
+                if variable_directions[0] and variable_directions[1]:
+                    self.wind_variable_directions = variable_directions
 
             # Get temperature data
             temps = re.search(r'\s(M?\d{2})/(M?\d{2})', parts.group(3))    # https://regex101.com/r/oqplsG/1
@@ -114,10 +119,13 @@ class Report:
                 elif visibility.group(1):   # '8000', '9999'
                     distance = int(visibility.group(1))
                     unit = 'm'
-                elif visibility.group(3):   # '2 1/4SM', 'M1/4SM'
-                    # Convert fraction to float (https://stackoverflow.com/a/1806309)
-                    # Note: negative values fail using this method. Since only positive values are handled this should not be an issue.
-                    distance = float(sum(Fraction(s) for s in visibility.group(3).split()))
+                elif visibility.group(3):   # '10SM', 2 1/4SM', 'M1/4SM'
+                    if '/' in visibility.group(3):
+                        # Convert fraction to float (https://stackoverflow.com/a/1806309)
+                        # Note: negative values fail using this method. Since only positive values are handled this should not be an issue.
+                        distance = float(sum(Fraction(s) for s in visibility.group(3).split()))
+                    else:
+                        distance = self.__int_or_str(visibility.group(3))
 
                     # The character 'M' is used to define a visibility distance less than the value.
                     # We'll use negative values to indicate this.
@@ -125,7 +133,7 @@ class Report:
                         distance = distance * -1
 
                     if visibility.group(4):
-                        unit = visibility.group(4)
+                        unit = visibility.group(4).lower()
 
                 self.visibility_distance = distance
                 self.visibility_distance_unit = unit
@@ -140,7 +148,7 @@ class Report:
             'wind_speed': self.wind_speed,
             'wind_speed_unit': self.wind_speed_unit,
             'wind_gust': self.wind_gust,
-            'wind_variable_direction': self.wind_variable_direction
+            'wind_variable_directions': self.wind_variable_directions
         }
 
     def temperatures(self):
@@ -164,6 +172,8 @@ class Report:
             'parsed': self.parsed,
             'ident': self.ident,
             'reported': self.reported,
+            'date': self.date,
+            'time': self.time,
             'report_modifier': self.report_modifier,
             'wind': self.wind(),
             'temperatures': self.temperatures(),
@@ -183,14 +193,71 @@ class Report:
         
         return json.dumps(self.result())
 
-    def is_parsed(self):
-        """Indicate if the report could be parsed."""
-        return self.parsed
-
     def get_raw(self):
         """Return the raw METAR input."""
         return self.raw
 
+    def is_parsed(self):
+        """Indicate if the report could be parsed."""
+        return self.parsed
+
     def get_ident(self):
         """Return the weather station identifier."""
         return self.ident
+
+    def get_report_modifier(self):
+        """Return the report modifier"""
+        return self.report_modifier
+
+
+    def get_reported(self):
+        """Return the reported date and time"""
+        return self.reported
+
+    def get_date(self):
+        """Return the date of the report"""
+        return self.date
+
+    def get_time(self):
+        """Return the time of the report"""
+        return self.time
+
+
+    def get_wind_direction(self):
+        """Return the wind direction"""
+        return self.wind_direction
+
+    def get_wind_speed(self):
+        """Return the wind speed"""
+        return self.wind_speed
+
+    def get_wind_speed_unit(self):
+        """Return the wind speed unit"""
+        return self.wind_speed_unit
+
+    def get_wind_gust(self):
+        """Return the wind gust speed"""
+        return self.wind_gust
+
+    def get_wind_variable_directions(self):
+        """Return the variable wind directions"""
+        return self.wind_variable_directions
+
+
+    def get_temperature(self):
+        """Return the temperature"""
+        return self.temperature
+
+    def get_dew_point(self):
+        """Return the dew point"""
+        return self.dew_point
+
+
+    def get_visibility_distance(self):
+        """Return the visibility distance"""
+        return self.visibility_distance
+
+    def get_visibility_distance_unit(self):
+        """Return the visibility distance unit"""
+        return self.visibility_distance_unit
+
