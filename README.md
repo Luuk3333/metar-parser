@@ -1,6 +1,28 @@
 # metar-parser
 Parses METAR reports and extracts values.
 
+- [Usage](#usage)
+- [Output format](#output-format)
+- [Development](#development)
+    - [Download repo](#download-repo)
+    - [Run tests](#run-tests)
+
+## Usage
+```
+from metar_parser import Metar
+
+report = Metar.Report('EHAM 020825Z 21022KT 190V250 9999 FEW008 SCT018 BKN022 17/15 Q1002 NOSIG')
+if report.is_parsed():
+    print('Station: {} @ {}'.format(report.get_ident(), report.get_time()))
+    print('Wind speed: {} {}'.format(report.get_wind_speed(), report.get_wind_speed_unit()))
+```
+which outputs:
+```
+Station: EHAM @ 08:25
+Wind speed: 22 kt
+```
+See [sample.py](sample.py) for more examples.
+
 ## Output format
 Notes:
 - A negative visibility distance means the visibility is less than the distance. This does not apply to converted values.
@@ -31,3 +53,14 @@ Notes:
 | wind/speed_ms | `get_wind_speed_ms()` | meters per second | int or float | converted wind speed in meters per second |
 | wind/speed_unit | `get_wind_speed_unit()` |  | int | unit of wind speed |
 | wind/variable_directions | `get_wind_variable_directions()` | degrees | list | contains variable wind directions |
+
+## Development
+### Download repo
+```
+git clone https://github.com/Luuk3333/metar-parser
+cd metar-parser
+```
+### Run tests
+```
+python3 -m unittest
+```
