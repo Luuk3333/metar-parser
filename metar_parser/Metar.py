@@ -183,7 +183,7 @@ class Report:
                         unit = visibility.group(4).lower()
 
                 if distance and unit:
-                    self.visibility_distance_m = self._convert_to_m(distance, unit)
+                    self.visibility_distance_m = self._convert_to_m(abs(distance), unit)
 
                 self.visibility_distance = distance
                 self.visibility_distance_unit = unit

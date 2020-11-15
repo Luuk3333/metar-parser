@@ -43,7 +43,7 @@ class TestConversions(unittest.TestCase):
                 self.assertEqual(report.get_wind_gust_ms(), value)
 
     def test_visibility_distance(self):
-        for i, value in enumerate([10000, 9999, 18520, -14816, 926, 4167, -1389]):
+        for i, value in enumerate([10000, 9999, 18520, 14816, 926, 4167, 1389]):
             report = Metar.Report(REPORTS_VISIBILITY[i])
             self.assertEqual(report.get_visibility_distance_m(), value)
 
