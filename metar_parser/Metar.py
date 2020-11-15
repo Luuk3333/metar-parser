@@ -167,7 +167,8 @@ class Report:
                     distance = int(visibility.group(1))
                     unit = 'm'
                 elif visibility.group(3):   # '10SM', 2 1/4SM', 'M1/4SM'
-                    if '/' in visibility.group(3):
+                    # Check for only one '/' for a fraction. This rules out invalid values like '////SM'.
+                    if visibility.group(3).count('/') == 1:
                         # Convert fraction to float (https://stackoverflow.com/a/1806309)
                         # Note: negative values fail using this method. Since only positive values are handled this should not be an issue.
                         distance = float(sum(Fraction(s) for s in visibility.group(3).split()))
