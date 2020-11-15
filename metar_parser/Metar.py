@@ -144,11 +144,11 @@ class Report:
     def wind(self):
         """Return the parsed wind data."""
         return {
-            'wind_direction': self.wind_direction,
-            'wind_speed': self.wind_speed,
-            'wind_speed_unit': self.wind_speed_unit,
-            'wind_gust': self.wind_gust,
-            'wind_variable_directions': self.wind_variable_directions
+            'direction': self.wind_direction,
+            'speed': self.wind_speed,
+            'speed_unit': self.wind_speed_unit,
+            'gust': self.wind_gust,
+            'variable_directions': self.wind_variable_directions
         }
 
     def temperatures(self):
