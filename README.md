@@ -19,10 +19,13 @@ Notes:
 | time | | string | time of report (HH:MM)
 | visibility | | object | contains visibility data
 | visibility/distance | specified by `visibility/distance_unit` | int | visibility distance
+| visibility/distance_m | meters | int or float | converted visibility distance in meters
 | visibility/distance_unit |  | int | unit of visibility distance
 | wind | | object | contains wind data
 | wind/direction | degrees or `'VRB'` | int or string | wind direction
 | wind/gust | specified by `wind/speed_unit` | int | gust speed
+| wind/gust_ms | meters per second | int or float | converted gust speed in meters per second
 | wind/speed | specified by `wind/speed_unit` | int | wind speed
+| wind/speed_ms | meters per second | int or float | converted wind speed in meters per second
 | wind/speed_unit |  | int | unit of wind speed
 | wind/variable_directions | degrees | list | contains variable wind directions

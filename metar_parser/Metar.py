@@ -3,8 +3,45 @@ from datetime import datetime
 import json
 from fractions import Fraction
 
+SPEED_TO_MS = {
+    'mps': 1,
+    'kt': 0.514444
+}
+
+DISTANCE_TO_M = {
+    'm': 1,
+    'sm': 1852
+}
+
 class Report:
     """A parsed METAR report."""
+    def _convert_to_ms(self, value, unit):
+        """Convert a value to meters per second
+
+        Parameters
+        ----------
+        value : int/float
+          Input value.
+        unit : str
+          Unit to convert from.
+        """
+        if value and unit and unit in SPEED_TO_MS:
+            return value * SPEED_TO_MS[unit]
+        return None
+
+    def _convert_to_m(self, value, unit):
+        """Convert a value to meters
+
+        Parameters
+        ----------
+        value : int/float
+          Input value.
+        unit : str
+          Unit to convert from.
+        """
+        if value and unit and unit in DISTANCE_TO_M:
+            return value * DISTANCE_TO_M[unit]
+        return None
 
     def __int_or_str(self, string):
         """Try converting to int, if fails, return string."""
@@ -43,12 +80,15 @@ class Report:
         self.wind_speed_unit = None
         self.wind_gust = None
         self.wind_variable_directions = None
+        self.wind_speed_ms = None
+        self.wind_gust_ms = None
 
         self.temperature = None
         self.dew_point = None
 
         self.visibility_distance = None
         self.visibility_distance_unit = None
+        self.visibility_distance_m = None
 
         # Split report into main parts: ident, date+time, body, remarks
         parts = re.match(r'^(\S{4})\s*(.*?Z)(.*?)(?:RMK(.*))?$', self.raw)  # https://regex101.com/r/Nq5xhk/1
@@ -89,6 +129,13 @@ class Report:
 
                 if variable_directions[0] and variable_directions[1]:
                     self.wind_variable_directions = variable_directions
+
+                if self.wind_speed_unit:
+                    if self.wind_speed:
+                        self.wind_speed_ms = self._convert_to_ms(self.wind_speed, self.wind_speed_unit)
+
+                    if self.wind_gust:
+                        self.wind_gust_ms = self._convert_to_ms(self.wind_gust, self.wind_speed_unit)
 
             # Get temperature data
             temps = re.search(r'\s(M?\d{2})/(M?\d{2})', parts.group(3))    # https://regex101.com/r/oqplsG/1
@@ -135,6 +182,9 @@ class Report:
                     if visibility.group(4):
                         unit = visibility.group(4).lower()
 
+                if distance and unit:
+                    self.visibility_distance_m = self._convert_to_m(distance, unit)
+
                 self.visibility_distance = distance
                 self.visibility_distance_unit = unit
 
@@ -148,7 +198,9 @@ class Report:
             'speed': self.wind_speed,
             'speed_unit': self.wind_speed_unit,
             'gust': self.wind_gust,
-            'variable_directions': self.wind_variable_directions
+            'variable_directions': self.wind_variable_directions,
+            'speed_ms': self.wind_speed_ms,
+            'gust_ms': self.wind_gust_ms
         }
 
     def temperatures(self):
@@ -162,7 +214,8 @@ class Report:
         """Return the parsed visibility data."""
         return {
             'distance': self.visibility_distance,
-            'distance_unit': self.visibility_distance_unit
+            'distance_unit': self.visibility_distance_unit,
+            'distance_m': self.visibility_distance_m
         }
 
     def result(self):
@@ -243,6 +296,14 @@ class Report:
         """Return the variable wind directions"""
         return self.wind_variable_directions
 
+    def get_wind_speed_ms(self):
+        """Return the wind speed in m/s"""
+        return self.wind_speed_ms
+
+    def get_wind_gust_ms(self):
+        """Return the wind gust speed in m/s"""
+        return self.wind_gust_ms
+
 
     def get_temperature(self):
         """Return the temperature"""
@@ -261,3 +322,6 @@ class Report:
         """Return the visibility distance unit"""
         return self.visibility_distance_unit
 
+    def get_visibility_distance_m(self):
+        """Return the wind speed in m"""
+        return self.visibility_distance_m
