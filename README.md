@@ -2,6 +2,9 @@
 Parses METAR reports and extracts values.
 
 ## JSON Output Format
+Notes:
+- A negative visibility distance means the visibility is less than the distance. This does not apply to converted values.
+
 | **key** | **unit** | **datatype** | **description**
 |-|-|-|-|
 | date | | string | date of report (YYYY-MM-DD)
