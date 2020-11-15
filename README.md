@@ -22,7 +22,7 @@ Notes:
 | visibility/distance_unit |  | int | unit of visibility distance
 | wind | | object | contains wind data
 | wind/direction | degrees or `'VRB'` | int or string | wind direction
-| wind/gust | knots | int | gust speed
+| wind/gust | specified by `wind/speed_unit` | int | gust speed
 | wind/speed | specified by `wind/speed_unit` | int | wind speed
 | wind/speed_unit |  | int | unit of wind speed
 | wind/variable_directions | degrees | list | contains variable wind directions
