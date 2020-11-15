@@ -5,10 +5,11 @@ Parses METAR reports and extracts values.
 Notes:
 - A negative visibility distance means the visibility is less than the distance. This does not apply to converted values.
 - The getter `json()` will return the parsed report in JSON.
+- The current year and month will be used when returning the date.
 
 | **JSON key** | **getter** | **unit** | **datatype** | **description** |
 |-|-|-|-|-|
-| date | `get_date()` |  | string | date of report (YYYY-MM-DD) |
+| date | `get_date()` | `'YYYY-MM-DD'` | string | date of report |
 | ident | `get_ident()` |  | string | weather station identifier |
 | parsed | `is_parsed()` |  | boolean | parsed status |
 | raw | `get_raw()` |  | string | input METAR |
@@ -17,7 +18,7 @@ Notes:
 | temperatures | `temperatures()` |  | object | contains temperature data |
 | temperatures/dew_point | `get_dew_point()` | degrees Celsius | int | dew point temperature |
 | temperatures/temperature | `get_temperature()` | degrees Celsius | int | temperature |
-| time | `get_time()` |  | string | time of report (HH:MM) |
+| time | `get_time()` | `'HH:MM'` | string | time of report |
 | visibility | `visibility()` |  | object | contains visibility data |
 | visibility/distance | `get_visibility_distance()` | specified by `visibility/distance_unit` | int | visibility distance |
 | visibility/distance_m | `get_visibility_distance_m()` | meters | int or float | converted visibility distance in meters |
