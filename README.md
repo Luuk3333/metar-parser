@@ -31,6 +31,10 @@ Notes:
 
 | **JSON key** | **getter** | **unit** | **datatype** | **description** |
 |-|-|-|-|-|
+| altimeter | `altimeter()` |  | object | contains altimeter data |
+| altimeter/pressure | `get_altimeter_pressure` | inches of mercury or hectopascal | int or float | pressure at station
+| altimeter/pressure_pa | `get_altimeter_pressure_pa` | pascal | float | converted pressure to pascal
+| altimeter/pressure_unit | `get_altimeter_pressure_unit` | | string | unit of pressure
 | date | `get_date()` | `'YYYY-MM-DD'` | string | date of report |
 | ident | `get_ident()` |  | string | weather station identifier |
 | parsed | `is_parsed()` |  | boolean | parsed status |

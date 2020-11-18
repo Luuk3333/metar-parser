@@ -13,10 +13,20 @@ DISTANCE_TO_M = {
     'sm': 1852
 }
 
+PRESSURE_UNITS = {
+    'Q': 'hPa',
+    'A': 'inHg'
+}
+
+PRESSURE_TO_PA = {
+    'hPa': 100,
+    'inHg': 3376.85 # inches of mercury (60 °F)
+}
+
 class Report:
     """A parsed METAR report."""
-    def _convert_to_ms(self, value, unit):
-        """Convert a value to meters per second
+    def _convert(self, value, unit, constants):
+        """Convert a value
 
         Parameters
         ----------
@@ -24,28 +34,18 @@ class Report:
           Input value.
         unit : str
           Unit to convert from.
+        constants : dict
+          Dict containing conversion constants
         """
-        if value and unit and unit in SPEED_TO_MS:
-            return value * SPEED_TO_MS[unit]
+        if value == None or unit == None:
+            return None
+
+        if unit in constants:
+            return value * constants[unit]
         return None
 
-    def _convert_to_m(self, value, unit):
-        """Convert a value to meters
-
-        Parameters
-        ----------
-        value : int/float
-          Input value.
-        unit : str
-          Unit to convert from.
-        """
-        if value and unit and unit in DISTANCE_TO_M:
-            return value * DISTANCE_TO_M[unit]
-        return None
-
-    def __int_or_str(self, string):
-        """Try converting to int, if fails, return string."""
-        if not string:
+    def _int_or_none(self, string):
+        if string == None:
             return None
 
         string = string.strip()
@@ -57,6 +57,17 @@ class Report:
             return int(string)
         except ValueError:
             return string
+
+    def __int_or_str(self, string):
+        """Try converting to int, if fails, return string."""
+        if string == None:
+            return None
+
+        value = self._int_or_none(string)
+
+        if value == None and not '/' in string:
+            return string
+        return value
 
     def __init__(self, raw):
         """Parse an input METAR report.
@@ -89,6 +100,10 @@ class Report:
         self.visibility_distance = None
         self.visibility_distance_unit = None
         self.visibility_distance_m = None
+
+        self.altimeter_pressure = None
+        self.altimeter_pressure_unit = None
+        self.altimeter_pressure_pa = None
 
         # Split report into main parts: ident, date+time, body, remarks
         parts = re.match(r'^(\S{4})\s*(.*?Z)(.*?)(?:RMK(.*))?$', self.raw)  # https://regex101.com/r/Nq5xhk/1
@@ -132,10 +147,10 @@ class Report:
 
                 if self.wind_speed_unit:
                     if self.wind_speed:
-                        self.wind_speed_ms = self._convert_to_ms(self.wind_speed, self.wind_speed_unit)
+                        self.wind_speed_ms = self._convert(self.wind_speed, self.wind_speed_unit, SPEED_TO_MS)
 
                     if self.wind_gust:
-                        self.wind_gust_ms = self._convert_to_ms(self.wind_gust, self.wind_speed_unit)
+                        self.wind_gust_ms = self._convert(self.wind_gust, self.wind_speed_unit, SPEED_TO_MS)
 
             # Get temperature data
             temps = re.search(r'\s(M?\d{2})/(M?\d{2})', parts.group(3))    # https://regex101.com/r/oqplsG/1
@@ -184,10 +199,29 @@ class Report:
                         unit = visibility.group(4).lower()
 
                 if distance and unit:
-                    self.visibility_distance_m = self._convert_to_m(abs(distance), unit)
+                    self.visibility_distance_m = self._convert(abs(distance), unit, DISTANCE_TO_M)
 
                 self.visibility_distance = distance
                 self.visibility_distance_unit = unit
+
+            # Get altimeter data
+            altimeter = re.search(r'\s(?:(Q|A)(\d{4}))', parts.group(3))    # https://regex101.com/r/VFeX74/1
+            if altimeter:
+                value = altimeter.group(2)
+                unit = altimeter.group(1).upper()
+
+                # Add decimal point to values in inHg ('3004' to '30.04')
+                if unit == 'A':
+                    value = value[:2] + '.' + value[2:]
+
+                if unit in PRESSURE_UNITS:
+                    if unit == 'Q':
+                        self.altimeter_pressure = int(value)
+                    else:
+                        self.altimeter_pressure = float(value)
+
+                    self.altimeter_pressure_unit = PRESSURE_UNITS[unit]  # Convert 'Q' to 'hPa'
+                    self.altimeter_pressure_pa = self._convert(self.altimeter_pressure, self.altimeter_pressure_unit, PRESSURE_TO_PA)
 
         self.parsed = True
 
@@ -219,6 +253,14 @@ class Report:
             'distance_m': self.visibility_distance_m
         }
 
+    def altimeter(self):
+        """Return the parsed altimeter data."""
+        return {
+            'pressure': self.altimeter_pressure,
+            'pressure_unit': self.altimeter_pressure_unit,
+            'pressure_pa': self.altimeter_pressure_pa
+        }
+
     def result(self):
         """Return the parsed report."""
         return {
@@ -231,7 +273,8 @@ class Report:
             'report_modifier': self.report_modifier,
             'wind': self.wind(),
             'temperatures': self.temperatures(),
-            'visibility': self.visibility()
+            'visibility': self.visibility(),
+            'altimeter': self.altimeter()
         }
 
     def json(self, pretty=False):
@@ -326,3 +369,16 @@ class Report:
     def get_visibility_distance_m(self):
         """Return the wind speed in m"""
         return self.visibility_distance_m
+
+
+    def get_altimeter_pressure(self):
+        """Return the altimeter value"""
+        return self.altimeter_pressure
+
+    def get_altimeter_pressure_unit(self):
+        """Return the altimeter unit"""
+        return self.altimeter_pressure_unit
+
+    def get_altimeter_pressure_pa(self):
+        """Return the altimeter in pa"""
+        return self.altimeter_pressure_pa
