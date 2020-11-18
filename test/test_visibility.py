@@ -17,27 +17,35 @@ REPORTS = [
     'KLAX 020753Z 05004KT 0SM R25L/1800V3000FT FG VV002 17/16 A3006 RMK AO2 SLP177 T01670161 402440128',
     'KWBF 020945Z AUTO 02016G24KT M8SM OVC037 22/15 A3025 RMK A01',
     'KSXS 021031Z AUTO M 10SM CLR 08/00 A3032 RMK AO2 SLP269',
+    'KTRK 181545Z 0000KT 05SM -RN BKN023 OVC029 03/02 A2994',
+    'KTRK 181545Z 0000KT M05SM -RN BKN023 OVC029 03/02 A2994',
 
     'KELZ 020956Z AUTO 31017G23KT 1/2SM SN FZFG BKN007 OVC011 M03/M04 A2986 RMK AO2 PK WND 32035/0901 SLP135 P0001 T10331039',
     'CYBC 021001Z AUTO 33003KT 2 1/4SM R10/5500FT/N -RA BR BKN024 OVC045 04/03 A2926 RMK VIS VRB 5/8-3 SLP912',
     'CYFC 021002Z AUTO 33002KT M3/4SM R09/5000FT/U -RA BR OVC029 10/10 A2917 RMK PRESFR SLP880 DENSITY ALT 200FT',
+    'CYBC 021001Z AUTO 33003KT M2 1/4SM R10/5500FT/N -RA BR BKN024 OVC045 04/03 A2926 RMK VIS VRB 5/8-3 SLP912',
 ]
 
 class TestVisibility(unittest.TestCase):
     def test_distance(self):
-        for i, value in enumerate([10000, 9999, 8000, 9000, 10, 4, 0, -8, -10, 0.5, 2.25, -0.75]):
+        for i, value in enumerate([10000, 9999, 8000, 9000, 10, 4, 0, -8, -10, 5, -5, 0.5, 2.25, -0.75, -2.25]):
             report = Metar.Report(REPORTS[i])
             self.assertEqual(report.get_visibility_distance(), value)
 
     def test_unit(self):
-        for i, value in enumerate(['m', 'm', 'm', 'm', 'sm', 'sm', 'sm', 'sm', 'sm', 'sm', 'sm', 'sm']):
+        for i, value in enumerate(['m', 'm', 'm', 'm', 'sm', 'sm', 'sm', 'sm', 'sm', 'sm', 'sm', 'sm', 'sm', 'sm', 'sm']):
             report = Metar.Report(REPORTS[i])
             self.assertEqual(report.get_visibility_distance_unit(), value)
  
     def test_converted_distance(self):
-        for i, value in enumerate([10000, 9999, 8000, 9000, 18520, 7408, 0, 14816, 18520, 926, 4167, 1389]):
+        for i, value in enumerate([10000, 9999, 8000, 9000, 18520, 7408, 0, 14816, 18520, 9260, 9260, 926, 4167, 1389, 4167]):
             report = Metar.Report(REPORTS[i])
             self.assertEqual(report.get_visibility_distance_m(), value)
+ 
+    def test_distance_str(self):
+        for i, value in enumerate(['CAVOK', '9999 m', '8000 m', '9000 m', '10 sm', '4 sm', '0 sm', '< 8 sm', '< 10 sm', '5 sm', '< 5 sm', '1/2 sm', '2 1/4 sm', '< 3/4 sm', '< 2 1/4 sm']):
+            report = Metar.Report(REPORTS[i])
+            self.assertEqual(report.get_visibility_distance_str(), value)
 
 if __name__ == '__main__':
     unittest.main()

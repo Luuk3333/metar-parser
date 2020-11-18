@@ -48,6 +48,7 @@ Notes:
 | visibility | `visibility()` |  | object | contains visibility data |
 | visibility/distance | `get_visibility_distance()` | specified by `visibility/distance_unit` | int | visibility distance |
 | visibility/distance_m | `get_visibility_distance_m()` | meters | int or float | converted visibility distance in meters |
+| visibility/distance_str | `get_visibility_distance_str()` | | string | visibility including 'less than' symbol and unit if applicable, retaining fractions |
 | visibility/distance_unit | `get_visibility_distance_unit()` |  | int | unit of visibility distance |
 | wind | `wind()` |  | object | contains wind data |
 | wind/direction | `get_wind_direction()` | degrees or `'VRB'` | int or string | wind direction |

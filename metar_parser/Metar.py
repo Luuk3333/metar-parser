@@ -100,6 +100,7 @@ class Report:
         self.visibility_distance = None
         self.visibility_distance_unit = None
         self.visibility_distance_m = None
+        self.visibility_distance_str = None
 
         self.altimeter_pressure = None
         self.altimeter_pressure_unit = None
@@ -172,15 +173,18 @@ class Report:
             visibility = re.search(r'\s(?:(\d{4})\s|(M)?([\d\s/]{1,5})(SM)|(CAVOK))', parts.group(3))   # https://regex101.com/r/YWZkDI/2/
             if visibility:
                 distance = None
+                distance_str = None
                 unit = None
 
                 # Check for several visibilty formats
                 if visibility.group(5): # 'CAVOK'
+                    distance_str = visibility.group(5)
                     distance = 10000
                     unit = 'm'
-                elif visibility.group(1):   # '8000', '9999'
-                    distance = int(visibility.group(1))
+                elif visibility.group(1):   # '8000', '9999', '0300'
+                    distance = int(visibility.group(1))    # Convert '0300' to 300
                     unit = 'm'
+                    distance_str = '{} {}'.format(distance, unit)   # 300 to '300 m'
                 elif visibility.group(3):   # '10SM', 2 1/4SM', 'M1/4SM'
                     # Check for only one '/' for a fraction. This rules out invalid values like '////SM'.
                     if visibility.group(3).count('/') == 1:
@@ -197,12 +201,24 @@ class Report:
 
                     if visibility.group(4) is not None:
                         unit = visibility.group(4).lower()
+                        distance_str = '{} {}'.format(visibility.group(3), unit)
 
                 if distance is not None and unit is not None:
                     self.visibility_distance_m = self._convert(abs(distance), unit, DISTANCE_TO_M)
 
+                if distance_str is not None and distance is not None:
+                    # Remove leading zero ('05 sm' to '5 sm')
+                    distance_str = distance_str.strip()
+                    if abs(distance) != 0:
+                        distance_str = distance_str.lstrip('0')
+
+                    # Add 'less than' symbol ('1/4 sm' to '< 1/4 sm')
+                    if distance < 0:
+                        distance_str = '< {}'.format(distance_str)
+
                 self.visibility_distance = distance
                 self.visibility_distance_unit = unit
+                self.visibility_distance_str = distance_str
 
             # Get altimeter data
             altimeter = re.search(r'\s(?:(Q|A)(\d{4}))', parts.group(3))    # https://regex101.com/r/VFeX74/1
@@ -250,7 +266,8 @@ class Report:
         return {
             'distance': self.visibility_distance,
             'distance_unit': self.visibility_distance_unit,
-            'distance_m': self.visibility_distance_m
+            'distance_m': self.visibility_distance_m,
+            'distance_str': self.visibility_distance_str
         }
 
     def altimeter(self):
@@ -369,6 +386,10 @@ class Report:
     def get_visibility_distance_m(self):
         """Return the wind speed in m"""
         return self.visibility_distance_m
+
+    def get_visibility_distance_str(self):
+        """Return the visibility including 'less than' symbol and unit if applicable, retaining fractions"""
+        return self.visibility_distance_str
 
 
     def get_altimeter_pressure(self):
