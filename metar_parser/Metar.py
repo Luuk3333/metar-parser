@@ -77,34 +77,35 @@ class Report:
         raw : str
           Input METAR report.
         """
-        self.raw = raw.strip()  # Input METAR report
-        self.parsed = False
-        self.ident = None
-        self.report_modifier = None
+        self.raw = raw.strip()                  # input METAR report ('EHAM 020825Z 21022G23KT 190V250 9999 FEW008...')
+        self.parsed = False                     # parsed status
+        self.ident = None                       # weather station identifier ('EHAM')
+        self.report_modifier = None             # auto/corrected modifier ('AUTO', 'COR')
 
-        self.reported = None
-        self.date = None
-        self.time = None
+        self.reported = None                    # date and time of report in ISO 8601 ('2020-11-02T08:25:00+00:00'), assuming current year and month
+        self.date = None                        # date of report in 'YYYY-MM-DD', assuming current year and month
+        self.time = None                        # time of report in 'HH:MM'
 
-        self.wind_direction = None
-        self.wind_speed = None
-        self.wind_speed_unit = None
-        self.wind_gust = None
-        self.wind_variable_directions = None
-        self.wind_speed_ms = None
-        self.wind_gust_ms = None
+        self.wind_direction = None              # wind direction
+        self.wind_speed = None                  # wind speed
+        self.wind_speed_unit = None             # unit of wind speed ('kt', 'mps')
+        self.wind_gust = None                   # gust speed
+        self.wind_variable_directions = None    # list containing variable wind directions ([210, 240])
+        self.wind_speed_ms = None               # converted wind speed in meters per second
+        self.wind_gust_ms = None                # converted gust speed in meters per second
 
-        self.temperature = None
-        self.dew_point = None
+        self.temperature = None                 # temperature in degrees Celsius
+        self.dew_point = None                   # dew point in degrees Celsius
 
-        self.visibility_distance = None
-        self.visibility_distance_unit = None
-        self.visibility_distance_m = None
-        self.visibility_distance_str = None
+        self.visibility_distance = None         # visibility distance (negative value to be interpreted as 'visibility less than value')
+        self.visibility_distance_unit = None    # unit of visibility distance ('m', 'sm')
+        self.visibility_distance_m = None       # converted visibility distance in meters
+        self.visibility_distance_str = None     # visibility distance as string, with 'less than' symbol and unit if applicable,
+                                                # retains fractions ('< 2 1/4 sm', '200 m', 'CAVOK')
 
-        self.altimeter_pressure = None
-        self.altimeter_pressure_unit = None
-        self.altimeter_pressure_pa = None
+        self.altimeter_pressure = None          # pressure at station (1015, 29.92)
+        self.altimeter_pressure_unit = None     # unit of pressure ('inHg', 'hPa')
+        self.altimeter_pressure_pa = None       # converted pressure in pascals
 
         # Split report into main parts: ident, date+time, body, remarks
         parts = re.match(r'^(\S{4})\s*(.*?Z)(.*?)(?:RMK(.*))?$', self.raw)  # https://regex101.com/r/Nq5xhk/1
@@ -358,25 +359,25 @@ class Report:
         return self.wind_variable_directions
 
     def get_wind_speed_ms(self):
-        """Return the wind speed in m/s"""
+        """Return the wind speed in meters per second"""
         return self.wind_speed_ms
 
     def get_wind_gust_ms(self):
-        """Return the wind gust speed in m/s"""
+        """Return the wind gust speed in meters per second"""
         return self.wind_gust_ms
 
 
     def get_temperature(self):
-        """Return the temperature"""
+        """Return the temperature in degrees Celsius"""
         return self.temperature
 
     def get_dew_point(self):
-        """Return the dew point"""
+        """Return the dew point in degrees Celsius"""
         return self.dew_point
 
 
     def get_visibility_distance(self):
-        """Return the visibility distance"""
+        """Return the visibility distance (negative value to be interpreted as 'visibility less than value')"""
         return self.visibility_distance
 
     def get_visibility_distance_unit(self):
@@ -384,7 +385,7 @@ class Report:
         return self.visibility_distance_unit
 
     def get_visibility_distance_m(self):
-        """Return the wind speed in m"""
+        """Return the converted visibility distance in meters"""
         return self.visibility_distance_m
 
     def get_visibility_distance_str(self):
@@ -393,13 +394,13 @@ class Report:
 
 
     def get_altimeter_pressure(self):
-        """Return the altimeter value"""
+        """Return the pressure"""
         return self.altimeter_pressure
 
     def get_altimeter_pressure_unit(self):
-        """Return the altimeter unit"""
+        """Return the pressure unit"""
         return self.altimeter_pressure_unit
 
     def get_altimeter_pressure_pa(self):
-        """Return the altimeter in pa"""
+        """Return the converted pressure in pascals"""
         return self.altimeter_pressure_pa
