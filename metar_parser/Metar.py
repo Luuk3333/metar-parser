@@ -37,7 +37,7 @@ class Report:
         constants : dict
           Dict containing conversion constants
         """
-        if value == None or unit == None:
+        if value is None or unit is None:
             return None
 
         if unit in constants:
@@ -45,7 +45,7 @@ class Report:
         return None
 
     def _int_or_none(self, string):
-        if string == None:
+        if string is None:
             return None
 
         string = string.strip()
@@ -60,12 +60,12 @@ class Report:
 
     def __int_or_str(self, string):
         """Try converting to int, if fails, return string."""
-        if string == None:
+        if string is None:
             return None
 
         value = self._int_or_none(string)
 
-        if value == None and not '/' in string:
+        if value is None and not '/' in string:
             return string
         return value
 
@@ -133,7 +133,7 @@ class Report:
                 self.wind_speed = self.__int_or_str(wind.group(2))
                 self.wind_gust = self.__int_or_str(wind.group(3))
 
-                if self.wind_speed:
+                if self.wind_speed is not None:
                     self.wind_speed_unit = wind.group(4).lower()
 
                 # Add variable wind direction
@@ -142,14 +142,14 @@ class Report:
                     self.__int_or_str(wind.group(6))
                 ]
 
-                if variable_directions[0] and variable_directions[1]:
+                if variable_directions[0] is not None and variable_directions[1] is not None:
                     self.wind_variable_directions = variable_directions
 
-                if self.wind_speed_unit:
-                    if self.wind_speed:
+                if self.wind_speed_unit is not None:
+                    if self.wind_speed is not None:
                         self.wind_speed_ms = self._convert(self.wind_speed, self.wind_speed_unit, SPEED_TO_MS)
 
-                    if self.wind_gust:
+                    if self.wind_gust is not None:
                         self.wind_gust_ms = self._convert(self.wind_gust, self.wind_speed_unit, SPEED_TO_MS)
 
             # Get temperature data
@@ -192,13 +192,13 @@ class Report:
 
                     # The character 'M' is used to define a visibility distance less than the value.
                     # We'll use negative values to indicate this.
-                    if visibility.group(2):
+                    if visibility.group(2) is not None:
                         distance = distance * -1
 
-                    if visibility.group(4):
+                    if visibility.group(4) is not None:
                         unit = visibility.group(4).lower()
 
-                if distance and unit:
+                if distance is not None and unit is not None:
                     self.visibility_distance_m = self._convert(abs(distance), unit, DISTANCE_TO_M)
 
                 self.visibility_distance = distance

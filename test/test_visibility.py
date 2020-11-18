@@ -33,6 +33,11 @@ class TestVisibility(unittest.TestCase):
         for i, value in enumerate(['m', 'm', 'm', 'm', 'sm', 'sm', 'sm', 'sm', 'sm', 'sm', 'sm', 'sm']):
             report = Metar.Report(REPORTS[i])
             self.assertEqual(report.get_visibility_distance_unit(), value)
+ 
+    def test_converted_distance(self):
+        for i, value in enumerate([10000, 9999, 8000, 9000, 18520, 7408, 0, 14816, 18520, 926, 4167, 1389]):
+            report = Metar.Report(REPORTS[i])
+            self.assertEqual(report.get_visibility_distance_m(), value)
 
 if __name__ == '__main__':
     unittest.main()
